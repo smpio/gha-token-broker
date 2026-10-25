@@ -25,7 +25,7 @@ export async function exchange(url: URL, jwt: string, request: typeof fetch = fe
   if (!response.ok) throw new Error(`Broker returned HTTP ${response.status}`);
   const data: unknown = await response.json();
   if (!data || typeof data !== 'object' || !('token' in data) || !('expires_at' in data) ||
-      typeof data.token !== 'string' || !/^[A-Za-z0-9_]+$/.test(data.token) ||
+      typeof data.token !== 'string' || !/^[A-Za-z0-9_.-]+$/.test(data.token) ||
       typeof data.expires_at !== 'string' || !(Date.parse(data.expires_at) > Date.now())) {
     throw new Error('Invalid broker response');
   }

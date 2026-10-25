@@ -31,6 +31,14 @@ test('exchange does not expose errors or accept expired/malformed credentials', 
   }
 });
 
+test('exchange accepts both opaque and stateless GitHub installation tokens', async () => {
+  for (const token of ['ghs_opaque_token', 'ghs_eyJhbGciOiJSUzI1NiJ9.eyJpZCI6MX0.signature-with_underscores']) {
+    const result = await exchange(brokerURL('https://broker.test'), 'oidc', async () =>
+      Response.json({token, expires_at: new Date(Date.now()+3600_000).toISOString()}));
+    assert.equal(result.token, token);
+  }
+});
+
 test('cleanup revokes only at GitHub; expiry is idempotent and other failures fail cleanup', async () => {
   for (const status of [204,401,500]) {
     const request: typeof fetch = async (url, init) => {
