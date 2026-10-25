@@ -1,0 +1,105 @@
+# Preparation template: create the namespace/config/key and publish the image first.
+# Keep deployed desired manifests in smpio/infra after review.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gha-token-broker
+  namespace: gha-token-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gha-token-broker
+  template:
+    metadata:
+      labels:
+        app: gha-token-broker
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: broker
+          image: ghcr.io/smpio/gha-token-broker:1
+          args:
+            - -private-key=/etc/gha-token-broker/credentials/private-key.pem
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+            limits:
+              memory: 64Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/gha-token-broker
+              readOnly: true
+            - name: key
+              mountPath: /etc/gha-token-broker/credentials
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: gha-token-broker-config
+        - name: key
+          secret:
+            secretName: gha-token-broker-key
+            defaultMode: 0440
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gha-token-broker
+  namespace: gha-token-broker
+spec:
+  selector:
+    app: gha-token-broker
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gha-token-broker
+  namespace: gha-token-broker
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-http01
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1k
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: gha-token-broker.bind.pw
+      http:
+        paths:
+          - path: /v1/token
+            pathType: Exact
+            backend:
+              service:
+                name: gha-token-broker
+                port:
+                  name: http
+  tls:
+    - hosts: [gha-token-broker.bind.pw]
+      secretName: gha-token-broker-tls

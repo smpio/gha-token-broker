@@ -1,0 +1,21 @@
+{
+  "name": "gha-token-broker-action",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "ncc build action/main.ts -o dist/main --license licenses.txt && ncc build action/post.ts -o dist/post --license licenses.txt",
+    "test": "tsc && node --test build/action/client.test.js && npm run build && node --test action/bundle.test.cjs",
+    "check-dist": "npm run build && git diff --exit-code -- dist"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@actions/core": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@vercel/ncc": "^0.45.0",
+    "typescript": "^5.9.3"
+  }
+}

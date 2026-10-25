@@ -1,0 +1,24 @@
+{
+  "audience": "https://gha-token-broker.bind.pw",
+  "app_id": "REPLACE_WITH_DEDICATED_APP_ID",
+  "installation_id": 0,
+  "target_repository_id": 138051827,
+  "policies": [
+    {
+      "repository_id": "229058900",
+      "repository_owner_id": "29103864",
+      "repository": "smpio/kube-resource-analyzer",
+      "ref": "refs/heads/master",
+      "event_name": "workflow_run",
+      "workflow_ref": "smpio/kube-resource-analyzer/.github/workflows/k8s-deploy.yml@refs/heads/master"
+    },
+    {
+      "repository_id": "229058900",
+      "repository_owner_id": "29103864",
+      "repository": "smpio/kube-resource-analyzer",
+      "ref": "refs/heads/master",
+      "event_name": "workflow_dispatch",
+      "workflow_ref": "smpio/kube-resource-analyzer/.github/workflows/k8s-deploy.yml@refs/heads/master"
+    }
+  ]
+}

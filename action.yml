@@ -1,0 +1,19 @@
+name: GHA token broker
+description: Exchange GitHub Actions OIDC for a repository-scoped GitHub App token
+inputs:
+  broker-url:
+    description: HTTPS broker base URL (also the OIDC audience)
+    required: true
+outputs:
+  token:
+    description: GitHub App installation token; revoked when the job ends
+  expires-at:
+    description: Token expiration time in RFC 3339 format
+runs:
+  using: node24
+  main: dist/main/index.js
+  post: dist/post/index.js
+  post-if: always()
+branding:
+  icon: key
+  color: blue
